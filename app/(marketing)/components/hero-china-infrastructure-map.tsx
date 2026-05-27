@@ -50,7 +50,7 @@ type HospitalRow = {
   coordinates: [number, number];
 };
 
-const PRIMARY = (hospitals as HospitalRow[]).map((h) => {
+const PRIMARY = (hospitals as unknown as HospitalRow[]).map((h) => {
   const [x, y] = projectGeoCoord(h.coordinates[0], h.coordinates[1]);
   return { id: h.id, label: h.city, x, y };
 });
