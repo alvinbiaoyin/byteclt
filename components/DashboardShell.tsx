@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import ChinaMap from "./china-map";
-import IntelligenceExplorer from "./intelligence-explorer";
-import LaboratoryList from "./laboratory-list";
-import MarketIntelligenceNotes from "./market-intelligence-notes";
-import MarketAnalytics from "./market-analytics"; // ✅ 核心导入：20号晚上同款高颜值图表
+import ChinaMap from "../app/components/china-map";
+import IntelligenceExplorer from "../app/components/intelligence-explorer";
+import LaboratoryList from "../app/components/laboratory-list";
+import MarketIntelligenceNotes from "../app/components/market-intelligence-notes";
+import MarketAnalytics from "../app/components/market-analytics";
 import { computeAnalytics } from "@/lib/compute-analytics";
 import type { Hospital, FilterState } from "@/lib/hospital-types";
 
@@ -180,7 +180,7 @@ export default function DashboardShell({ hospitals }: DashboardShellProps) {
         </div>
         {/* 右侧：5条硬核专家报告面板 */}
         <div>
-          <MarketIntelligenceNotes analytics={analytics} />
+          <MarketIntelligenceNotes hospitals={filteredHospitals} />
         </div>
       </div>
     </div>

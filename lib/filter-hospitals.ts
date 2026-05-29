@@ -32,7 +32,7 @@ export function uniqueValues(
   key: keyof Hospital
 ): string[] {
   const set = new Set<string>();
-  for (const hospital of safeArray(hospitals)) {
+  for (const hospital of safeArray(hospitals) as Record<string, any>[]) {
     const val = hospital[key];
     if (Array.isArray(val)) {
       val.forEach((v) => v && set.add(String(v)));
@@ -47,7 +47,7 @@ export function filterHospitalsForList(
   hospitals: Hospital[],
   filters: FilterState
 ): Hospital[] {
-  const safeHospitals = safeArray(hospitals);
+  const safeHospitals = safeArray(hospitals) as Hospital[];
 
   return safeHospitals.filter((hospital) => {
     if (filters.country?.length && (!hospital.country || !filters.country.includes(hospital.country))) return false;
