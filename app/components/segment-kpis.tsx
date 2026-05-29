@@ -6,7 +6,7 @@ import type { Hospital } from "@/lib/hospital-types";
 
 type SegmentKpisProps = {
   hospitals: Hospital[];
-  allHospitals: Hospital[];
+  allHospitals: Hospital[]; // still accepted but not used in compute
   mapVisibleCount: number;
 };
 
@@ -16,17 +16,17 @@ export default function SegmentKpis({
   mapVisibleCount,
 }: SegmentKpisProps) {
   const snapshot = useMemo(
-    () => computeIntelligence(hospitals, allHospitals),
-    [hospitals, allHospitals]
+    () => computeIntelligence(hospitals),
+    [hospitals]
   );
 
   const topAssay = snapshot.assayMix[0];
 
   const items = [
     {
-      label: "Network Coverage",
-      value: `${snapshot.networkCoverage.coveragePercent}%`,
-      detail: `${snapshot.networkCoverage.sitesActive} active sites`,
+      label: "Provinces",
+      value: String(snapshot.provinceCount),
+      detail: "Distinct provinces in segment",
     },
     {
       label: "Map Visibility",
@@ -34,24 +34,24 @@ export default function SegmentKpis({
       detail: "Institutions on map",
     },
     {
-      label: "Median TAT",
-      value: `${snapshot.medianTatDays} Days`,
-      detail: "Segment median",
-    },
-    {
-      label: "Provinces",
-      value: `${snapshot.networkCoverage.provincesCovered}`,
-      detail: `of ${snapshot.networkCoverage.provincesTotal} covered`,
-    },
-    {
-      label: "Monthly Volume",
-      value: snapshot.estimatedMonthlyVolume.toLocaleString(),
-      detail: "Est. tests / month",
+      label: "Assay Types",
+      value: String(snapshot.assayMix.length),
+      detail: "Unique assays detected",
     },
     {
       label: "Lead Assay",
-      value: topAssay ? `${topAssay.share}%` : "—",
-      detail: topAssay?.assay ?? "No assay data",
+      value: topAssay ? topAssay.name : "—",
+      detail: topAssay ? `${topAssay.value} hospitals` : "No assay data",
+    },
+    {
+      label: "Total Nodes",
+      value: String(hospitals.length),
+      detail: "In filtered segment",
+    },
+    {
+      label: "Insight",
+      value: "—",
+      detail: snapshot.insights[0] ?? "No insight available",
     },
   ];
 

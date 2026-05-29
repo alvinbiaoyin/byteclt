@@ -38,7 +38,7 @@ const PROVINCE_MAP: Record<string, { cn: string; coords: [number, number] }> = {
 
 const DEFAULT_NODE = { cn: "北京", coords: [116.4074, 39.9042] };
 
-export const revalidate = 0; 
+export const revalidate = 0;
 
 export default async function IntelPage() {
   const supabase = createSupabaseServerClient();
@@ -46,23 +46,25 @@ export default async function IntelPage() {
   let errorMessage = "";
 
   try {
-    // 📡 铁血直连：按照线上真实的 "id" 字段进行升序排序
-    const response = await supabase
-      .from("alvinyinchina_pdl1_demo")
-      .select("*")
-      .order("id", { ascending: true }); // ✅ 修复：由 lab_id 改为线上真实存在的 id
-
-    if (response.error) {
-      errorMessage = `${response.error.code}: ${response.error.message}`;
-      console.error("Supabase Matrix Error:", response.error);
+    if (!supabase) {
+      errorMessage = "Supabase client initialization failed — check environment variables";
     } else {
-      rawData = response.data || [];
+      const response = await supabase
+        .from("alvinyinchina_pdl1_demo")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (response.error) {
+        errorMessage = `${response.error.code}: ${response.error.message}`;
+        console.error("Supabase Matrix Error:", response.error);
+      } else {
+        rawData = response.data || [];
+      }
     }
   } catch (catchErr: any) {
     errorMessage = catchErr?.message || "Critical connection crash";
   }
 
-  // 🧪 数据转换管道
   const hospitals: Hospital[] = rawData.map((row: any) => {
     const rawKey = String(row.province || "BEIJING").toUpperCase().trim();
     const provKey = rawKey === "HEBEI PROVINCE" ? "HEBEI" : rawKey;
@@ -89,7 +91,7 @@ export default async function IntelPage() {
       typeof row.reimbursement_cny === "number" ? row.reimbursement_cny : null;
 
     return {
-      id: row.id || Math.random(), // ✅ 修复：完全读取线上的 id
+      id: row.id || Math.random(),
       name: row.hospital_name || "Unknown Laboratory Node",
       province: matchedProvince.cn,
       city: row.city || "城市",
@@ -108,7 +110,6 @@ export default async function IntelPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50 p-6 selection:bg-cyan-500/30">
-      {/* 👑 智能品牌顶栏 */}
       <div className="mb-6 p-3 rounded-xl border border-cyan-500/20 bg-cyan-950/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className={`h-2 w-2 rounded-full ${errorMessage ? 'bg-amber-400' : 'bg-cyan-400'}`} />
@@ -127,14 +128,12 @@ export default async function IntelPage() {
         </div>
       </div>
 
-      {/* 🚨 管道错误显示栏 */}
       {errorMessage && (
         <div className="mb-6 p-3 rounded-lg border border-amber-500/30 bg-amber-950/20 text-xs font-mono text-amber-300">
           ⚠️ <strong>Pipeline Warning:</strong> {errorMessage}
         </div>
       )}
 
-      {/* 核心大屏外壳 */}
       <DashboardShell hospitals={hospitals} />
     </main>
   );
