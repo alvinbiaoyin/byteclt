@@ -47,7 +47,7 @@ export default async function IntelPage() {
 
   try {
     if (!supabase) {
-      errorMessage = "Supabase client initialization failed — check environment variables";
+      errorMessage = `Supabase env missing — URL length: ${process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0}, KEY length: ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0}`;
     } else {
       const response = await supabase
         .from("alvinyinchina_pdl1_demo")
