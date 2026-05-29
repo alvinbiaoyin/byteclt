@@ -34,7 +34,7 @@ export default function ChinaMap({ hospitals }: ChinaMapProps) {
   useEffect(() => {
     async function fetchGeoJson() {
       try {
-        const res = await fetch("https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json");
+        const res = await fetch("/maps/china.json");
         if (!res.ok) throw new Error("Primary map source offline");
         const json = await res.json();
         setMapGeoJson(json);
