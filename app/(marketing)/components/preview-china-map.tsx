@@ -9,15 +9,18 @@ import {
 // palette + curated hospital nodes. Pure server-rendered SVG — no glow
 // shadows, no interactivity, no extra UI chrome.
 
+// 修复类型错误：将 coordinates 改为 number[]，与 hospitals.json 数据匹配
 type HospitalRow = {
   id: string;
   name: string;
   city: string;
-  coordinates: [number, number];
+  coordinates: number[]; // 原为 [number, number]，现在兼容任意长度数组
 };
 
-const PRIMARY_NODES = (hospitals as HospitalRow[]).map((h) => {
-  const [x, y] = projectGeoCoord(h.coordinates[0], h.coordinates[1]);
+// 直接使用，无需任何类型断言
+const PRIMARY_NODES = hospitals.map((h: HospitalRow) => {
+  const [lon, lat] = h.coordinates;
+  const [x, y] = projectGeoCoord(lon, lat);
   return { id: h.id, label: h.city, x, y };
 });
 
