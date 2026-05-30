@@ -43,9 +43,8 @@ export default function MarketingFooter() {
             </Link>
           ))}
         </nav>
-
         <p className="mt-12 text-xs text-zinc-600">
-          © {new Date().getFullYear()} BYTEclt
+          © {new Date().getFullYear()} BYTEclt · 沪ICP备14016076号-1
         </p>
       </div>
     </footer>
