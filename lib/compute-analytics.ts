@@ -165,6 +165,11 @@ export type ScoringIntelligence = {
     tc: number;
   };
   distinctMethods: number;
+  coReporting: {
+    tpsCpsLabs: string[];
+    tpsCpsCount: number;
+    tpsCpsSharePercent: number;
+  };
   landscape: "TPS-dominant" | "CPS-dominant" | "Mixed" | "Heterogeneous" | "Sparse";
 };
 
@@ -691,39 +696,129 @@ function buildScoringIntelligence(
 ): ScoringIntelligence {
   const safe = Array.isArray(filtered) ? filtered : [];
 
+  // Row-level exclusive scoring categories.
+  // ["TPS"] = TPS-only
+  // ["CPS"] = CPS-only
+  // ["TPS", "CPS"] = TPS+CPS co-reporting
+  // ["%TC"] or ["TC"] = TC
   const methodCounts = new Map<ScoringMethod, number>([
-    ["TPS", 0],
-    ["CPS", 0],
+    ["TPS", 0], // TPS-only
+    ["CPS", 0], // CPS-only
     ["IC", 0],
     ["TC", 0],
   ]);
+
+  let classifiedLabCount = 0;
   let unclassifiedCount = 0;
+  const tpsCpsLabs: string[] = [];
+
+  const normalizeScoringMethod = (value: unknown): ScoringMethod | null => {
+    const text = String(value || "")
+      .replace(/[\[\]"']/g, "")
+      .trim()
+      .toUpperCase();
+
+    if (!text) return null;
+
+    if (text === "%TC" || text === "TC" || text.includes("TUMOR CELL")) return "TC";
+    if (text === "IC" || text.includes("IMMUNE CELL")) return "IC";
+    if (text.includes("TPS") || text.includes("TUMOR PROPORTION")) return "TPS";
+    if (text.includes("CPS") || text.includes("COMBINED POSITIVE")) return "CPS";
+
+    return null;
+  };
+
+  const expandScoringValues = (values: unknown[]): ScoringMethod[] => {
+    const methods = values.flatMap((value) =>
+      String(value || "")
+        .split(/[,+/;|]/)
+        .map((item) => normalizeScoringMethod(item))
+        .filter((item): item is ScoringMethod => Boolean(item))
+    );
+
+    return Array.from(new Set(methods));
+  };
+
+  const countExclusiveCategory = (methods: ScoringMethod[], labName: string) => {
+    if (methods.length === 0) {
+      unclassifiedCount += 1;
+      return;
+    }
+
+    classifiedLabCount += 1;
+
+    const hasTPS = methods.includes("TPS");
+    const hasCPS = methods.includes("CPS");
+    const hasIC = methods.includes("IC");
+    const hasTC = methods.includes("TC");
+
+    if (hasTPS && hasCPS) {
+      tpsCpsLabs.push(labName || "Unknown Laboratory");
+      return;
+    }
+
+    if (hasTPS) {
+      methodCounts.set("TPS", (methodCounts.get("TPS") ?? 0) + 1);
+      return;
+    }
+
+    if (hasCPS) {
+      methodCounts.set("CPS", (methodCounts.get("CPS") ?? 0) + 1);
+      return;
+    }
+
+    if (hasIC) {
+      methodCounts.set("IC", (methodCounts.get("IC") ?? 0) + 1);
+      return;
+    }
+
+    if (hasTC) {
+      methodCounts.set("TC", (methodCounts.get("TC") ?? 0) + 1);
+      return;
+    }
+
+    unclassifiedCount += 1;
+  };
 
   for (const h of safe) {
-    if (!h || !Array.isArray(h.assays)) continue;
-    for (const a of h.assays) {
-      if (!a) continue;
-      const method = deriveScoringMethod(a);
-      if (method) {
-        methodCounts.set(method, (methodCounts.get(method) ?? 0) + 1);
-      } else {
-        unclassifiedCount += 1;
-      }
+    if (!h) continue;
+
+    const explicitScoring = Array.isArray(h.scoring)
+      ? expandScoringValues(h.scoring)
+      : [];
+
+    if (explicitScoring.length > 0) {
+      countExclusiveCategory(explicitScoring, h.name || "Unknown Laboratory");
+      continue;
     }
+
+    // Fallback only when explicit scoring is absent.
+    const inferredMethods = Array.isArray(h.assays)
+      ? h.assays
+          .map((a) => deriveScoringMethod(a))
+          .filter((item): item is ScoringMethod => Boolean(item))
+      : [];
+
+    countExclusiveCategory(
+      Array.from(new Set(inferredMethods)),
+      h.name || "Unknown Laboratory"
+    );
   }
 
-  const tpsCount = methodCounts.get("TPS") ?? 0;
-  const cpsCount = methodCounts.get("CPS") ?? 0;
+  const tpsOnlyCount = methodCounts.get("TPS") ?? 0;
+  const cpsOnlyCount = methodCounts.get("CPS") ?? 0;
   const icCount = methodCounts.get("IC") ?? 0;
   const tcCount = methodCounts.get("TC") ?? 0;
-  const classifiedCount = tpsCount + cpsCount + icCount + tcCount;
-  const totalEntries = classifiedCount + unclassifiedCount;
-  const denom = classifiedCount > 0 ? classifiedCount : 1;
+  const tpsCpsCount = tpsCpsLabs.length;
 
-  const tpsShare = round1((tpsCount / denom) * 100);
-  const cpsShare = round1((cpsCount / denom) * 100);
+  const totalEntries = classifiedLabCount + unclassifiedCount;
+  const denom = classifiedLabCount > 0 ? classifiedLabCount : 1;
+
+  const tpsOnlyShare = round1((tpsOnlyCount / denom) * 100);
+  const cpsOnlyShare = round1((cpsOnlyCount / denom) * 100);
   const icShare = round1((icCount / denom) * 100);
   const tcShare = round1((tcCount / denom) * 100);
+  const tpsCpsSharePercent = round1((tpsCpsCount / denom) * 100);
 
   const distribution = (["TPS", "CPS", "IC", "TC"] as const)
     .map((m) => ({
@@ -734,26 +829,41 @@ function buildScoringIntelligence(
     .filter((d) => d.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  const distinctMethods = distribution.length;
+  const distinctMethods =
+    distribution.length + (tpsCpsCount > 0 ? 1 : 0);
   const topMethod = distribution[0] ?? null;
 
   let landscape: ScoringIntelligence["landscape"];
-  if (classifiedCount < 5) landscape = "Sparse";
-  else if (tpsShare >= 60) landscape = "TPS-dominant";
-  else if (cpsShare >= 60) landscape = "CPS-dominant";
+  if (classifiedLabCount < 5) landscape = "Sparse";
+  else if (tpsOnlyShare >= 60) landscape = "TPS-dominant";
+  else if (cpsOnlyShare >= 60) landscape = "CPS-dominant";
   else if (distinctMethods >= 4 && (topMethod?.sharePercent ?? 0) < 40)
     landscape = "Heterogeneous";
   else landscape = "Mixed";
 
   return {
     distribution,
-    totals: { classifiedCount, unclassifiedCount, totalEntries },
+    totals: {
+      classifiedCount: classifiedLabCount,
+      unclassifiedCount,
+      totalEntries,
+    },
     dominant: {
       method: topMethod?.method ?? null,
       sharePercent: topMethod?.sharePercent ?? 0,
     },
-    shares: { tps: tpsShare, cps: cpsShare, ic: icShare, tc: tcShare },
+    shares: {
+      tps: tpsOnlyShare,
+      cps: cpsOnlyShare,
+      ic: icShare,
+      tc: tcShare,
+    },
     distinctMethods,
+    coReporting: {
+      tpsCpsLabs,
+      tpsCpsCount,
+      tpsCpsSharePercent,
+    },
     landscape,
   };
 }

@@ -16,10 +16,43 @@ import type {
 } from "@/lib/compute-analytics";
 import { joinList, toEnglishProvince } from "@/lib/province-labels";
 
+export type MarketNoteCategory =
+  | "geography"
+  | "institution"
+  | "platform"
+  | "regulatory"
+  | "reimbursement"
+  | "scoring"
+  | "general";
+
+export type MarketNoteSeverity = "info" | "watch" | "important";
+
+export type MarketNoteConfidence = "high" | "medium" | "low";
+
+export type MarketNoteBasis =
+  | "institution-level"
+  | "assay-entry-level"
+  | "province-level"
+  | "mixed"
+  | "insufficient-data";
+
 export type MarketNote = {
-  // Tag is retained for React keys / future stage routing. Not rendered.
+  // Tag is retained for React keys / future stage routing.
   tag: string;
+
+  // Human-readable insight sentence.
   text: string;
+
+  // Structured metadata for client-ready dashboard display.
+  // Optional during v2.1 migration so existing note generators do not break.
+  category?: MarketNoteCategory;
+  severity?: MarketNoteSeverity;
+  confidence?: MarketNoteConfidence;
+  basis?: MarketNoteBasis;
+
+  // Compact supporting metric shown under the insight.
+  // Example: "18 / 31 classified assay entries" or "25.8% reimbursed".
+  metric?: string;
 };
 
 const pct = (n: number): number => Math.round(n);
@@ -203,16 +236,45 @@ export function computeRegulatoryNotes(
 
   const notes: MarketNote[] = [];
 
+  const classifiedCoverage = Math.round(
+    (totals.classifiedCount / Math.max(totals.totalEntries, 1)) * 100
+  );
+
+  const nmpaShare = Math.round(shares.nmpa);
+  const ldtShare = Math.round(shares.ldt);
+  const ruoShare = Math.round(shares.ruo);
+
+  const mixMetric = `NMPA ${nmpaShare}%, LDT ${ldtShare}%, RUO ${ruoShare}%, ${totals.classifiedCount} classified assay entries, ${classifiedCoverage}% classification coverage`;
+
+  const confidence =
+    totals.classifiedCount >= 20 && classifiedCoverage >= 70
+      ? "high"
+      : totals.classifiedCount >= 8 && classifiedCoverage >= 50
+      ? "medium"
+      : "low";
+
+  // -------------------------------------------------------------------------
   // 1. Dominant regulatory model — single executive headline.
+  // -------------------------------------------------------------------------
   if (landscape === "NMPA-dominant") {
     notes.push({
-      tag: "reg-dominant",
-      text: `NMPA-approved assays account for the majority of reported testing workflows.`,
+      tag: "reg-dominant-nmpa",
+      category: "regulatory",
+      severity: "info",
+      confidence,
+      basis: "assay-entry-level",
+      metric: mixMetric,
+      text: `NMPA-approved assays account for the majority of classified reported testing workflows in the selected segment.`,
     });
   } else if (landscape === "LDT-dominant") {
     notes.push({
-      tag: "reg-dominant",
-      text: `LDT workflows lead the current testing landscape, driving the bulk of reported activity.`,
+      tag: "reg-dominant-ldt",
+      category: "regulatory",
+      severity: "info",
+      confidence,
+      basis: "assay-entry-level",
+      metric: mixMetric,
+      text: `LDT workflows account for the majority of classified reported testing workflows in the selected segment.`,
     });
   } else if (
     landscape === "Mixed" &&
@@ -221,48 +283,94 @@ export function computeRegulatoryNotes(
   ) {
     if (dominant.class === "NMPA-approved") {
       notes.push({
-        tag: "reg-dominant",
-        text: `NMPA-approved assays anchor the current testing landscape, with LDT workflows playing a complementary role.`,
+        tag: "reg-mixed-nmpa-anchor",
+        category: "regulatory",
+        severity: "info",
+        confidence,
+        basis: "assay-entry-level",
+        metric: mixMetric,
+        text: `NMPA-approved assays anchor the current testing landscape, with LDT workflows remaining present in the classified assay mix.`,
       });
     } else if (dominant.class === "LDT") {
       notes.push({
-        tag: "reg-dominant",
-        text: `LDT workflows hold a leading share of reported testing activity, alongside a measurable base of NMPA-approved assays.`,
+        tag: "reg-mixed-ldt-anchor",
+        category: "regulatory",
+        severity: "info",
+        confidence,
+        basis: "assay-entry-level",
+        metric: mixMetric,
+        text: `LDT workflows hold a leading share of classified reported testing activity, alongside a measurable base of NMPA-approved assays.`,
+      });
+    } else if (dominant.class === "RUO") {
+      notes.push({
+        tag: "reg-mixed-ruo-anchor",
+        category: "regulatory",
+        severity: "info",
+        confidence,
+        basis: "assay-entry-level",
+        metric: mixMetric,
+        text: `RUO-classified assay usage represents the leading share of the classified assay mix in the selected segment.`,
       });
     }
   }
 
-  // 2. LDT institution-type concentration — only when meaningful.
+  // -------------------------------------------------------------------------
+  // 2. LDT institution-type concentration.
+  // -------------------------------------------------------------------------
+  // This is mixed basis: LDT share comes from assay entries, while concentration
+  // comes from institutions that report at least one LDT-classified assay.
   if (
     shares.ldt >= 15 &&
     ldtConcentration &&
     ldtConcentration.dominantLabType &&
     ldtConcentration.sharePercent >= 70
   ) {
-    const labType = ldtConcentration.dominantLabType.toUpperCase();
-    if (labType === "HOSPITAL") {
-      notes.push({
-        tag: "reg-ldt-concentration",
-        text: `LDT workflows remain concentrated in large academic pathology centers.`,
-      });
-    } else if (labType === "COMMERCIAL") {
-      notes.push({
-        tag: "reg-ldt-concentration",
-        text: `LDT activity skews toward commercial reference laboratories.`,
-      });
-    }
+    const rawLabType = ldtConcentration.dominantLabType.toUpperCase();
+    const labTypeLabel =
+      rawLabType === "HOSPITAL"
+        ? "hospital pathology centers"
+        : rawLabType === "COMMERCIAL"
+        ? "commercial reference laboratories"
+        : ldtConcentration.dominantLabType;
+
+    notes.push({
+      tag: "reg-ldt-concentration",
+      category: "regulatory",
+      severity: "info",
+      confidence,
+      basis: "mixed",
+      metric: `LDT ${ldtShare}% of classified assay entries; ${Math.round(ldtConcentration.sharePercent)}% of LDT-reporting institutions are ${labTypeLabel}`,
+      text:
+        rawLabType === "HOSPITAL"
+          ? `LDT workflows remain concentrated in hospital pathology centers within the selected segment.`
+          : rawLabType === "COMMERCIAL"
+          ? `LDT activity skews toward commercial reference laboratories within the selected segment.`
+          : `LDT activity is concentrated within a specific institution type in the selected segment.`,
+    });
   }
 
-  // 3. RUO antibody usage — only when there's a meaningful signal.
+  // -------------------------------------------------------------------------
+  // 3. RUO antibody / workflow usage.
+  // -------------------------------------------------------------------------
   if (shares.ruo > 0 && shares.ruo < 5) {
     notes.push({
-      tag: "reg-ruo",
-      text: `RUO antibody usage remains limited across the current network.`,
+      tag: "reg-ruo-limited",
+      category: "regulatory",
+      severity: "info",
+      confidence,
+      basis: "assay-entry-level",
+      metric: `RUO ${ruoShare}% of classified assay entries`,
+      text: `RUO-classified assay usage remains limited across the current network view.`,
     });
   } else if (shares.ruo >= 10) {
     notes.push({
-      tag: "reg-ruo",
-      text: `RUO antibody usage shows measurable presence across the network, signaling a research-driven testing segment.`,
+      tag: "reg-ruo-measurable",
+      category: "regulatory",
+      severity: "info",
+      confidence,
+      basis: "assay-entry-level",
+      metric: `RUO ${ruoShare}% of classified assay entries`,
+      text: `RUO-classified assay usage shows measurable presence across the selected network view.`,
     });
   }
 
@@ -289,9 +397,13 @@ export function computeRegulatoryNotes(
 export function computeScoringNotes(
   scoring: ScoringIntelligence
 ): MarketNote[] {
-  const { shares, totals, distribution, distinctMethods, landscape } = scoring;
+  const {
+    shares,
+    totals,
+    landscape,
+    coReporting,
+  } = scoring;
 
-  // Sparse coverage guard — no statistically meaningful signal.
   if (
     landscape === "Sparse" ||
     totals.classifiedCount < 5 ||
@@ -300,73 +412,60 @@ export function computeScoringNotes(
     return [];
   }
 
-  const topShare = distribution[0]?.sharePercent ?? 0;
-  const top2Share =
-    (distribution[0]?.sharePercent ?? 0) +
-    (distribution[1]?.sharePercent ?? 0);
-  const tpsCps = shares.tps + shares.cps;
+  const notes: MarketNote[] = [];
 
-  // Single headline bullet, selected in priority order:
+  const tpsOnlyShare = Math.round(shares.tps);
+  const cpsOnlyShare = Math.round(shares.cps);
+  const icShare = Math.round(shares.ic);
+  const tcShare = Math.round(shares.tc);
 
-  // 1. Single dominant methodology.
-  if (shares.tps >= 60) {
-    return [
-      {
-        tag: "scoring-lead",
-        text: "TPS remains the dominant scoring methodology across participating institutions.",
-      },
-    ];
-  }
-  if (shares.cps >= 60) {
-    return [
-      {
-        tag: "scoring-lead",
-        text: "CPS remains the dominant scoring methodology across participating institutions.",
-      },
-    ];
-  }
-  if (shares.ic >= 50) {
-    return [
-      {
-        tag: "scoring-lead",
-        text: "IC scoring leads testing methodology adoption across the current network.",
-      },
-    ];
-  }
+  const tpsCpsCount = coReporting?.tpsCpsCount ?? 0;
+  const tpsCpsShare = Math.round(coReporting?.tpsCpsSharePercent ?? 0);
 
-  // 2. TPS / CPS duopoly — meaningful when both individually material.
-  if (tpsCps >= 75 && shares.tps >= 20 && shares.cps >= 20) {
-    return [
-      {
-        tag: "scoring-duopoly",
-        text: "TPS and CPS together account for the majority of reported scoring workflows.",
-      },
-    ];
-  }
+  const classifiedCoverage = Math.round(
+    (totals.classifiedCount / Math.max(totals.totalEntries, 1)) * 100
+  );
 
-  // 3. Concentration around a limited number of systems —
-  //    only when no clear single leader but the field is narrow.
-  if (distinctMethods >= 3 && top2Share >= 80) {
-    return [
-      {
-        tag: "scoring-concentration",
-        text: "A limited number of scoring systems account for the majority of reported testing workflows.",
-      },
-    ];
+  const confidence =
+    totals.classifiedCount >= 20 && classifiedCoverage >= 70
+      ? "high"
+      : totals.classifiedCount >= 8 && classifiedCoverage >= 50
+      ? "medium"
+      : "low";
+
+  const mixMetric =
+    `TPS-only ${tpsOnlyShare}%, ` +
+    `TPS+CPS ${tpsCpsShare}%, ` +
+    `CPS-only ${cpsOnlyShare}%, ` +
+    `IC ${icShare}%, ` +
+    `TC ${tcShare}%, ` +
+    `${totals.classifiedCount} classified labs with scoring data, ` +
+    `${classifiedCoverage}% classification coverage`;
+
+  if (tpsCpsCount > 0) {
+    notes.push({
+      tag: "scoring-row-level-tps-cps",
+      category: "scoring",
+      severity: "info",
+      confidence,
+      basis: "institution-level",
+      metric: mixMetric,
+      text: "TPS-only remains the largest scoring reporting pattern, while TPS+CPS co-reporting is observed as a distinct lab-level reporting category in the selected segment.",
+    });
+    return notes;
   }
 
-  // 4. True heterogeneity — many methods, no leader.
-  if (distinctMethods >= 4 && topShare < 40) {
-    return [
-      {
-        tag: "scoring-heterogeneity",
-        text: "Scoring practices remain heterogeneous across participating institutions.",
-      },
-    ];
-  }
+  notes.push({
+    tag: "scoring-row-level-summary",
+    category: "scoring",
+    severity: "info",
+    confidence,
+    basis: "institution-level",
+    metric: mixMetric,
+    text: "Scoring methodology reporting is summarized by mutually exclusive lab-level reporting categories in the selected segment.",
+  });
 
-  // No meaningful signal — stay silent.
-  return [];
+  return notes;
 }
 
 // =========================================================================
@@ -471,62 +570,142 @@ export function computeInstitutionNotes(
 //     (the two signals overlap).
 
 export function computeReimbursementNotes(
-  reim: ReimbursementIntelligence
+  reimbursement: ReimbursementIntelligence
 ): MarketNote[] {
-  const { coverage, pricing, provincialCoverage, tier1Comparison } = reim;
-
-  // Sparse guard.
-  if (coverage.landscape === "Sparse" || coverage.totalCount < 5) {
-    return [];
-  }
+  const { coverage, pricing, provincialCoverage, tier1Comparison } =
+    reimbursement;
 
   const notes: MarketNote[] = [];
 
-  // 1. Coverage headline.
-  if (coverage.landscape === "Broad") {
+  // -------------------------------------------------------------------------
+  // 1. Coverage headline
+  // -------------------------------------------------------------------------
+  // Institution-level because reimbursementStatus is counted per institution row.
+  if (coverage.totalCount === 0 || coverage.landscape === "Sparse") {
+    return [];
+  }
+
+  const reimbursedMetric = `${coverage.reimbursedCount} / ${coverage.totalCount} institutions reimbursed, ${Math.round(coverage.reimbursedShare)}%`;
+
+  if (coverage.landscape === "Limited") {
     notes.push({
-      tag: "reim-headline",
-      text: `Reimbursement coverage is broadly established across the testing network.`,
+      tag: "reimbursement-coverage-limited",
+      category: "reimbursement",
+      severity: coverage.reimbursedShare < 30 ? "important" : "watch",
+      confidence: coverage.totalCount >= 20 ? "high" : "medium",
+      basis: "institution-level",
+      metric: reimbursedMetric,
+      text: `Reimbursement coverage remains limited in the selected segment, suggesting market access conditions may vary meaningfully across participating institutions.`,
     });
   } else if (coverage.landscape === "Established") {
     notes.push({
-      tag: "reim-headline",
-      text: `Reimbursement coverage is broadly established, though notable gaps persist across the testing network.`,
+      tag: "reimbursement-coverage-established",
+      category: "reimbursement",
+      severity: "info",
+      confidence: coverage.totalCount >= 20 ? "high" : "medium",
+      basis: "institution-level",
+      metric: reimbursedMetric,
+      text: `Reimbursement coverage is established across the selected segment, although non-reimbursed institutions remain present in the network.`,
     });
-  } else if (coverage.landscape === "Limited") {
+  } else if (coverage.landscape === "Broad") {
     notes.push({
-      tag: "reim-headline",
-      text: `Reimbursement support remains limited across the testing network, leaving significant coverage gaps.`,
+      tag: "reimbursement-coverage-broad",
+      category: "reimbursement",
+      severity: "info",
+      confidence: coverage.totalCount >= 20 ? "high" : "medium",
+      basis: "institution-level",
+      metric: reimbursedMetric,
+      text: `Reimbursement coverage is broadly reported across participating institutions in the selected segment.`,
     });
   }
 
-  // 2. Provincial pricing variability — only when truly fragmented.
-  if (pricing.variabilityLabel === "High") {
+  // -------------------------------------------------------------------------
+  // 2. Province-level heterogeneity
+  // -------------------------------------------------------------------------
+  // Province-level because this summarizes provincial coverage buckets.
+  const provinceCount = provincialCoverage.segmentProvinces;
+  const fullyCovered = provincialCoverage.fullyCoveredCount;
+  const uncovered = provincialCoverage.uncoveredCount;
+  const partial = provincialCoverage.partiallyCoveredProvinces.length;
+
+  if (provinceCount >= 3 && (uncovered > 0 || partial > 0)) {
+    const heterogeneityMetric = `${fullyCovered} fully covered, ${partial} partially covered, ${uncovered} uncovered provinces`;
+
     notes.push({
-      tag: "reim-pricing",
-      text: `Provincial pricing variability suggests fragmented provincial reimbursement structures.`,
+      tag: "reimbursement-provincial-heterogeneity",
+      category: "reimbursement",
+      severity: uncovered >= 3 ? "watch" : "info",
+      confidence: provinceCount >= 6 ? "high" : "medium",
+      basis: "province-level",
+      metric: heterogeneityMetric,
+      text: `Provincial reimbursement coverage remains heterogeneous across the selected market view.`,
     });
   }
 
-  // 3. Tier-1 coverage advantage OR provincial gap — mutually exclusive.
-  const tier1Strong =
-    tier1Comparison.tier1Total >= 3 &&
-    tier1Comparison.nonTier1Total >= 3 &&
-    tier1Comparison.tier1CoverageRate >= 90 &&
-    tier1Comparison.coverageGapPP >= 30;
-  const provincialGapStrong =
-    provincialCoverage.uncoveredCount >= 3 &&
-    provincialCoverage.segmentProvinces >= 8;
+  // -------------------------------------------------------------------------
+  // 3. Pricing variability
+  // -------------------------------------------------------------------------
+  // Mixed basis: prices are institution/province-linked reimbursement samples.
+  if (
+    pricing.samples >= 3 &&
+    pricing.min !== null &&
+    pricing.max !== null &&
+    pricing.median !== null
+  ) {
+    const priceMetric =
+      pricing.spreadRatio !== null
+        ? `${pricing.samples} price samples, median ¥${pricing.median}, range ¥${pricing.min}–¥${pricing.max}, ${pricing.spreadRatio}x spread`
+        : `${pricing.samples} price samples, median ¥${pricing.median}, range ¥${pricing.min}–¥${pricing.max}`;
 
-  if (tier1Strong) {
+    if (pricing.variabilityLabel === "High") {
+      notes.push({
+        tag: "reimbursement-pricing-high-variability",
+        category: "reimbursement",
+        severity: "watch",
+        confidence: pricing.samples >= 8 ? "high" : "medium",
+        basis: "mixed",
+        metric: priceMetric,
+        text: `Reported reimbursement pricing shows high variability, indicating materially different payment levels across reported samples.`,
+      });
+    } else if (pricing.variabilityLabel === "Moderate") {
+      notes.push({
+        tag: "reimbursement-pricing-moderate-variability",
+        category: "reimbursement",
+        severity: "info",
+        confidence: pricing.samples >= 8 ? "high" : "medium",
+        basis: "mixed",
+        metric: priceMetric,
+        text: `Reported reimbursement pricing shows moderate variability across available samples.`,
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 4. Tier-1 vs non-tier-1 reimbursement gap
+  // -------------------------------------------------------------------------
+  // Institution-level because the comparison is counted by institution rows.
+  const enoughTierComparison =
+    tier1Comparison.tier1Total >= 3 && tier1Comparison.nonTier1Total >= 3;
+
+  if (enoughTierComparison && Math.abs(tier1Comparison.coverageGapPP) >= 20) {
+    const gapDirection =
+      tier1Comparison.coverageGapPP > 0
+        ? "higher"
+        : "lower";
+
+    const gapMetric = `Tier-1: ${tier1Comparison.tier1Covered} / ${tier1Comparison.tier1Total} covered (${Math.round(tier1Comparison.tier1CoverageRate)}%), non-tier-1: ${tier1Comparison.nonTier1Covered} / ${tier1Comparison.nonTier1Total} covered (${Math.round(tier1Comparison.nonTier1CoverageRate)}%), gap ${Math.round(Math.abs(tier1Comparison.coverageGapPP))} pp`;
+
     notes.push({
-      tag: "reim-tier1",
-      text: `Tier-1 metros maintain near-universal reimbursement coverage, while support across non-tier-1 regions remains uneven.`,
-    });
-  } else if (provincialGapStrong) {
-    notes.push({
-      tag: "reim-provincial-gap",
-      text: `Reimbursement support remains absent across several provinces, signaling fragmented provincial market access.`,
+      tag: "reimbursement-tier1-gap",
+      category: "reimbursement",
+      severity: Math.abs(tier1Comparison.coverageGapPP) >= 35 ? "watch" : "info",
+      confidence:
+        tier1Comparison.tier1Total + tier1Comparison.nonTier1Total >= 20
+          ? "high"
+          : "medium",
+      basis: "institution-level",
+      metric: gapMetric,
+      text: `Tier-1 city institutions show ${gapDirection} reimbursement coverage than non-tier-1 institutions in the selected segment.`,
     });
   }
 

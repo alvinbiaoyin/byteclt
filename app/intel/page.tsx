@@ -105,6 +105,47 @@ export default async function IntelPage() {
       tatDays: row.tat_days ? Number(row.tat_days) : 3,
       reimbursementStatus,
       reimbursementCny,
+      scoring: (() => {
+        const raw = row.scoring;
+
+        const normalizeOne = (value: unknown): string[] => {
+          const text = String(value || "")
+            .replace(/[\[\]\"']/g, "")
+            .trim()
+            .toUpperCase();
+
+          if (!text) return [];
+
+          return text
+            .split(/[,+/;|]/)
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((item) => {
+              if (item === "%TC" || item === "TC" || item.includes("TUMOR CELL")) return "TC";
+              if (item === "IC" || item.includes("IMMUNE CELL")) return "IC";
+              if (item.includes("TPS") || item.includes("TUMOR PROPORTION")) return "TPS";
+              if (item.includes("CPS") || item.includes("COMBINED POSITIVE")) return "CPS";
+              return item;
+            })
+            .filter((item) => ["TPS", "CPS", "IC", "TC"].includes(item));
+        };
+
+        if (Array.isArray(raw)) {
+          return raw.flatMap(normalizeOne);
+        }
+
+        if (typeof raw === "string") {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) return parsed.flatMap(normalizeOne);
+          } catch {
+            // fall through to string splitting
+          }
+          return normalizeOne(raw);
+        }
+
+        return [];
+      })(),
     };
   });
 
