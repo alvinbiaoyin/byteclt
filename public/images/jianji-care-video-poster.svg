@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" fill="none">
+  <rect width="1080" height="1920" fill="#020617"/>
+  <rect x="0" y="0" width="1080" height="4" fill="#22d3ee" fill-opacity="0.35"/>
+  <rect x="80" y="80" width="48" height="1" fill="#22d3ee" fill-opacity="0.5"/>
+  <rect x="80" y="1840" width="920" height="1" fill="#1e293b"/>
+
+  <text
+    x="540"
+    y="720"
+    text-anchor="middle"
+    fill="#64748b"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    font-size="28"
+    letter-spacing="0.28em"
+  >BYTE HEALTHCARE CONSULTING</text>
+
+  <text
+    x="540"
+    y="820"
+    text-anchor="middle"
+    fill="#f1f5f9"
+    font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+    font-size="64"
+    font-weight="300"
+    letter-spacing="0.02em"
+  >Jianji Care</text>
+
+  <text
+    x="540"
+    y="900"
+    text-anchor="middle"
+    fill="#94a3b8"
+    font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+    font-size="36"
+    font-weight="300"
+  >China Factory Intelligence</text>
+
+  <text
+    x="540"
+    y="960"
+    text-anchor="middle"
+    fill="#94a3b8"
+    font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+    font-size="36"
+    font-weight="300"
+  >Healthcare Products</text>
+
+  <circle cx="540" cy="1120" r="72" stroke="#22d3ee" stroke-opacity="0.55" stroke-width="2" fill="#0f172a" fill-opacity="0.6"/>
+  <polygon points="520,1088 520,1152 576,1120" fill="#22d3ee" fill-opacity="0.85"/>
+
+  <text
+    x="540"
+    y="1280"
+    text-anchor="middle"
+    fill="#475569"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    font-size="26"
+    letter-spacing="0.18em"
+  >19-second overview</text>
+</svg>

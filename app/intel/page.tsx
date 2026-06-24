@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Jianji CDx™ Intelligence Platform",
-  description: "Powered by BYTEclt Consulting",
+  description: "Powered by BYTE Healthcare Consulting",
 };
 
 // 🌐 省份中文与坐标映射
@@ -156,7 +156,7 @@ export default async function IntelPage() {
           <span className={`h-2 w-2 rounded-full ${errorMessage ? 'bg-amber-400' : 'bg-cyan-400'}`} />
           <div className="flex items-baseline gap-2">
             <h1 className="text-sm font-bold tracking-wider text-slate-100">
-              Jianji CDx™ Intelligence Platform
+              Jianji CDx Intelligence Platform
             </h1>
             <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30">
               v1.0
@@ -165,7 +165,7 @@ export default async function IntelPage() {
         </div>
         <div className="text-xs font-mono text-slate-400 flex items-center gap-2">
           <span>Powered by</span>
-          <span className="text-cyan-300 font-bold">BYTEclt Consulting</span>
+          <span className="text-cyan-300 font-bold">BYTE Healthcare Consulting</span>
         </div>
       </div>
 

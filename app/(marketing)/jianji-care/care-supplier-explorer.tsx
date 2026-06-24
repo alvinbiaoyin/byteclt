@@ -14,9 +14,8 @@ import {
   READINESS_LEVELS,
 } from "@/lib/jianji-care-data";
 
-// Client-side supplier explorer: four independent filters (product category,
-// province, readiness level, audit status) over the mock supplier set, plus
-// the supplier card grid. The page passes the full dataset down; all filtering
+// Client-side factory intelligence explorer: four independent filters over the
+// mock manufacturer set, plus the factory profile card grid. All filtering
 // happens in the browser so the demo needs no backend.
 
 const ALL = "All" as const;
@@ -32,8 +31,6 @@ interface CareSupplierExplorerProps {
   provinces: string[];
 }
 
-// Keep the demo compact: show at most this many supplier cards by default,
-// both for the full set and any filtered result.
 const MAX_VISIBLE = 8;
 
 const READINESS_BADGE: Record<ReadinessLevel, string> = {
@@ -101,7 +98,6 @@ export default function CareSupplierExplorer({
 
   return (
     <div>
-      {/* ── Filters ──────────────────────────────────────────────────── */}
       <div className="rounded-sm border border-slate-800/80 bg-slate-900/30 p-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -146,7 +142,7 @@ export default function CareSupplierExplorer({
 
           <div>
             <label className={labelClass} htmlFor="filter-readiness">
-              Readiness level
+              Export readiness
             </label>
             <select
               id="filter-readiness"
@@ -189,7 +185,7 @@ export default function CareSupplierExplorer({
           <p className="text-[12px] font-mono text-slate-500">
             Showing{" "}
             <span className="text-cyan-300">{visible.length}</span> of{" "}
-            {filtered.length} suppliers
+            {filtered.length} illustrative records
           </p>
           {hasActiveFilter && (
             <button
@@ -203,15 +199,14 @@ export default function CareSupplierExplorer({
         </div>
       </div>
 
-      {/* ── Supplier cards ───────────────────────────────────────────── */}
       {visible.length === 0 ? (
         <p className="mt-6 rounded-sm border border-slate-800/80 bg-slate-900/30 px-6 py-16 text-center text-sm text-slate-500">
-          No suppliers match the current filter combination.
+          No illustrative records match the current filter combination.
         </p>
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((supplier) => (
-            <SupplierCard key={supplier.id} supplier={supplier} />
+            <FactoryProfileCard key={supplier.id} supplier={supplier} />
           ))}
         </div>
       )}
@@ -219,11 +214,14 @@ export default function CareSupplierExplorer({
   );
 }
 
-function SupplierCard({ supplier }: { supplier: CareSupplier }) {
+function FactoryProfileCard({ supplier }: { supplier: CareSupplier }) {
   return (
     <article className="flex flex-col rounded-sm border border-slate-800/80 bg-slate-900/40 p-5 transition-colors hover:border-cyan-500/40">
       <header>
-        <h3 className="text-[15px] font-medium leading-snug text-slate-100">
+        <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-600">
+          Illustrative factory profile
+        </p>
+        <h3 className="mt-1 text-[15px] font-medium leading-snug text-slate-100">
           {supplier.supplierName}
         </h3>
         <p className="mt-1 text-[12px] text-slate-500">
@@ -273,7 +271,7 @@ function SupplierCard({ supplier }: { supplier: CareSupplier }) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Badge className={READINESS_BADGE[supplier.overallReadiness]}>
-          Readiness: {supplier.overallReadiness}
+          Export readiness: {supplier.overallReadiness}
         </Badge>
         <Badge className={RISK_BADGE[supplier.riskLevel]}>
           Risk level: {supplier.riskLevel}
@@ -282,7 +280,7 @@ function SupplierCard({ supplier }: { supplier: CareSupplier }) {
 
       <p className="mt-4 border-t border-slate-800/80 pt-4 text-[12px] leading-6 text-slate-400">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-          BYTE assessment note
+          Factory intelligence note
         </span>
         <br />
         {supplier.byteAssessmentNote}

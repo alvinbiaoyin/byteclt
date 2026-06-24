@@ -1,12 +1,8 @@
 // lib/jianji-care-data.ts
-// Mock dataset for the Jianji Care™ Supplier Intelligence Platform demo.
+// Mock dataset for the Jianji Care China Factory Intelligence demo.
 //
-// China elderly care and rehabilitation device supplier intelligence for
-// international procurement, supplier evaluation, and market development.
-//
-// All supplier names are fictional. Figures are illustrative and intended
-// only for demonstration of the supplier-intelligence view. This file is a
-// self-contained mock — it is not connected to Supabase or any live source.
+// Illustrative manufacturer profiles for healthcare, rehabilitation,
+// elderly-care, mobility, and home-care products. Not connected to Supabase.
 
 export type ProductCategory =
   | "Electric wheelchair"

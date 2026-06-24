@@ -34,7 +34,7 @@ export default function SectionHero() {
               className="inline-flex items-center gap-2 rounded-sm border border-cyan-400/60 bg-cyan-500/15 px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.22em] text-cyan-100 transition-colors hover:border-cyan-300/80 hover:bg-cyan-500/25"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-              Explore Jianji CDx™
+              Explore Jianji CDx
             </Link>
             <Link
               href="/intel"

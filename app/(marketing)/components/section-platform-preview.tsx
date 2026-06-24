@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PreviewChinaMap } from "./preview-china-map";
 
-// Section 3 — Jianji CDx™ Intelligence Platform preview.
+// Section 3 — Jianji CDx Intelligence Platform preview.
 // Restrained product preview, not an internal dashboard. China map +
 // two metrics + a curated institution list. No backdrop grid, no glow,
 // no bottom chart row, no regional pip-bars — the homepage previews
@@ -29,7 +29,7 @@ export default function SectionPlatformPreview() {
         {/* ── Left text column ────────────────────────────────── */}
         <div className="flex flex-col justify-center lg:col-span-5">
           <h2 className="text-3xl font-normal leading-tight tracking-tight text-zinc-100 sm:text-4xl lg:text-[2.5rem]">
-            Jianji CDx™ Intelligence Platform
+            Jianji CDx Intelligence Platform
           </h2>
 
           <p className="mt-6 max-w-md text-[15px] leading-8 text-zinc-400">
@@ -76,7 +76,7 @@ function DashboardPreviewFrame() {
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
           <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-zinc-300">
-            Jianji CDx™ Platform
+            Jianji CDx Platform
           </span>
         </div>
         <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-zinc-600">
