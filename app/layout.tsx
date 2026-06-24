@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jianji™ by BYTEclt",
+  title: "BYTE Healthcare Consulting | Jianji CDx & Jianji Care",
   description:
-    "Commercial insights for biomarker testing and companion diagnostics across China.",
+    "Healthcare intelligence for biomarker and companion diagnostics through Jianji CDx, and China factory intelligence for healthcare products through Jianji Care.",
 };
 
 export default function RootLayout({

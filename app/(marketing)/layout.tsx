@@ -1,6 +1,6 @@
 // app/(marketing)/layout.tsx
-// Marketing route-group layout. Wraps "/", "/platform", "/about", "/contact"
-// with the shared marketing nav + footer chrome.
+// Marketing route-group layout. Wraps "/", "/platform", "/jianji-care",
+// "/about", "/contact", and related marketing pages with shared nav + footer.
 // The dashboard at /intel sits OUTSIDE this group and is unaffected.
 
 import type { ReactNode } from "react";
