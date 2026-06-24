@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// "Intelligence" points at the editorial observations page, not the
-// interactive dashboard. The dashboard lives at /intel and is reached via
-// the "Open Platform" CTA on the right of the nav.
+// Top nav stays diagnostics-first. "Platform" is the Jianji CDx™ product
+// page; "Intelligence" points at the editorial observations page, not the
+// interactive dashboard. The CDx dashboard lives at /intel and is reached via
+// the "Open CDx Platform" CTA on the right. Jianji Care™ is intentionally
+// kept out of the top nav and surfaced via the footer and the lower-page
+// adjacent-capability section instead.
 const NAV_ITEMS = [
   { href: "/platform", label: "Platform" },
   { href: "/intelligence", label: "Intelligence" },
@@ -60,14 +63,14 @@ export default function MarketingNav() {
           })}
         </nav>
 
-        {/* Right CTA */}
+        {/* Right CTA — opens the live Jianji CDx™ dashboard. */}
         <Link
           href="/intel"
           prefetch={false}
           className="inline-flex items-center gap-2 rounded-sm border border-cyan-500/40 bg-cyan-950/40 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-cyan-200 transition-colors hover:border-cyan-400/70 hover:bg-cyan-900/40 hover:text-cyan-100"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-          Open Platform
+          Open CDx Platform
         </Link>
       </div>
     </header>

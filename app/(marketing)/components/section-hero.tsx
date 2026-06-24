@@ -21,26 +21,27 @@ export default function SectionHero() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-slate-400">
-            Supporting companion diagnostics, testing strategy, testing
-            adoption, reimbursement status, and treatment pathway
-            understanding across precision medicine markets.
+            BYTEclt supports pharmaceutical, diagnostics, and biotechnology
+            organizations on companion diagnostic commercialization, laboratory
+            adoption, reimbursement considerations, and biomarker testing
+            strategy associated with real-world clinical implementation.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
-              href="/intel"
+              href="/platform"
               prefetch={false}
               className="inline-flex items-center gap-2 rounded-sm border border-cyan-400/60 bg-cyan-500/15 px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.22em] text-cyan-100 transition-colors hover:border-cyan-300/80 hover:bg-cyan-500/25"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-              Explore Jianji™
+              Explore Jianji CDx™
             </Link>
             <Link
-              href="/contact"
+              href="/intel"
               prefetch={false}
               className="inline-flex items-center gap-2 rounded-sm border border-slate-700 bg-transparent px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.22em] text-slate-300 transition-colors hover:border-slate-500 hover:text-slate-100"
             >
-              Request Access
+              Open CDx Platform
             </Link>
           </div>
 

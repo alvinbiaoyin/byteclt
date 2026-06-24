@@ -10,6 +10,7 @@ import SectionPlatformPreview from "./components/section-platform-preview";
 import SectionMarketReality from "./components/section-market-reality";
 import SectionByte from "./components/section-byte";
 import SectionSelectedWork from "./components/section-selected-work";
+import SectionAdjacentCare from "./components/section-adjacent-care";
 
 export const metadata: Metadata = {
   title: "BYTEclt · Biomarker Testing Intelligence Across Real Clinical Settings",
@@ -26,6 +27,7 @@ export default function MarketingHomePage() {
       <SectionMarketReality />
       <SectionByte />
       <SectionSelectedWork />
+      <SectionAdjacentCare />
     </>
   );
 }

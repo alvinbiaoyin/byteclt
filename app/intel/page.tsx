@@ -8,7 +8,7 @@ import type { Hospital } from "@/lib/hospital-types";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Jianji™ CDx Intelligence Platform",
+  title: "Jianji CDx™ Intelligence Platform",
   description: "Powered by BYTEclt Consulting",
 };
 
@@ -156,7 +156,7 @@ export default async function IntelPage() {
           <span className={`h-2 w-2 rounded-full ${errorMessage ? 'bg-amber-400' : 'bg-cyan-400'}`} />
           <div className="flex items-baseline gap-2">
             <h1 className="text-sm font-bold tracking-wider text-slate-100">
-              Jianji™ CDx Intelligence Platform
+              Jianji CDx™ Intelligence Platform
             </h1>
             <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30">
               v1.0

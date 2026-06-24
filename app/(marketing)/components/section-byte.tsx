@@ -32,7 +32,7 @@ export default function SectionByte() {
             hospital-level adoption.
           </p>
           <p className="text-[15px] leading-8 text-zinc-400">
-            Jianji™ is BYTEclt&apos;s internal platform for analyzing
+            Jianji CDx™ is BYTEclt&apos;s internal platform for analyzing
             companion diagnostic adoption across Chinese hospitals and
             third-party testing laboratories.
           </p>

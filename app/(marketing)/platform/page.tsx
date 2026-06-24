@@ -1,5 +1,5 @@
 // app/(marketing)/platform/page.tsx
-// Platform — what Jianji™ is, restrained edition.
+// Platform — what Jianji CDx™ is, restrained edition.
 //
 // Reads quieter and shorter than before. No second China map (homepage
 // already establishes that visually). No "What Jianji Tracks" feature list
@@ -13,9 +13,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Jianji™ Platform · BYTEclt",
+  title: "Jianji CDx™ Intelligence Platform · BYTEclt",
   description:
-    "Jianji™ supports observational analysis related to biomarker testing adoption, reimbursement dynamics, and laboratory activity across precision medicine markets.",
+    "Jianji CDx™ supports observational analysis related to biomarker testing adoption, reimbursement dynamics, and laboratory activity across precision medicine markets.",
 };
 
 // Biomarker constellation — irregular, editorial scatter rather than a
@@ -56,15 +56,15 @@ export default function PlatformPage() {
     <section className="border-b border-slate-900 bg-slate-950">
       <div className="mx-auto max-w-3xl px-6 py-32 md:py-40">
         <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-zinc-500">
-          Jianji™
+          Jianji CDx™
         </p>
 
         <h1 className="mt-8 text-3xl font-light tracking-tight text-zinc-100 md:text-4xl">
-          Diagnostics Intelligence Platform
+          Jianji CDx™ Intelligence Platform
         </h1>
 
         <p className="mt-10 text-[15px] leading-8 text-zinc-400">
-          Jianji™ supports observational analysis related to biomarker
+          Jianji CDx™ supports observational analysis related to biomarker
           testing adoption, reimbursement dynamics, and laboratory activity
           across precision medicine markets.
         </p>
