@@ -332,46 +332,6 @@ export default function JianjiCarePage() {
         </div>
       </section>
 
-      {/* ── Boundary ───────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 pb-14 md:pb-16">
-        <h2 className="text-[11px] font-mono uppercase tracking-[0.22em] text-slate-500">
-          What we are / are not
-        </h2>
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-sm border border-slate-800/80 bg-slate-900/40 p-6">
-            <h3 className="text-[13px] font-medium text-emerald-300/90">
-              We are
-            </h3>
-            <ul className="mt-4 space-y-2 text-[13px] leading-7 text-slate-400">
-              <li>
-                China-side{" "}
-                <span className="text-slate-300">supplier quality</span>{" "}
-                execution for healthcare products
-              </li>
-              <li>QA + QC + follow-up + light project control</li>
-              <li>
-                A bilingual bridge between your team and China factories
-              </li>
-            </ul>
-          </div>
-          <div className="rounded-sm border border-slate-800/80 bg-slate-900/40 p-6">
-            <h3 className="text-[13px] font-medium text-amber-300/90">
-              We are not
-            </h3>
-            <ul className="mt-4 space-y-2 text-[13px] leading-7 text-slate-400">
-              <li>A surgical-robot integrator or clinical robotics partner</li>
-              <li>
-                Your full EU/US regulatory submission or notified-body agency
-              </li>
-              <li>
-                A generic marketplace of &quot;500 factories&quot; with no
-                quality gates
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
       {/* ── Factory intelligence support (demo layer) ──────────────── */}
       <section
         id="factory-intelligence-support"
