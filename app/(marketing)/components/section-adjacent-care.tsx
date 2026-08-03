@@ -13,12 +13,13 @@ export default function SectionAdjacentCare() {
             Jianji Care
           </p>
           <h3 className="mt-2 text-lg font-light tracking-tight text-slate-100">
-            China Factory Intelligence for Healthcare Products
+            China Supplier Quality Management for Healthcare Products
           </h3>
           <p className="mt-3 text-[13px] leading-7 text-slate-400">
-            Evaluate Chinese manufacturers across factory identity, production
-            capability, quality systems, audit readiness, and export
-            execution—before critical sourcing and production decisions.
+            Your China-side supplier quality team for eldercare devices, IVD
+            and CDx reagents &amp; consumables, and medical devices — standards,
+            on-site checks, CAPA follow-up, and shipment release without a
+            full-time China SQE.
           </p>
           <Link
             href="/jianji-care"
